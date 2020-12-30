@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script src="./three.js-master/build/three.js"></script>
+<script src="./three.js-master/examples/js/loaders/FBXLoader.js"></script>
+<!-- 辅助文件 -->
+<script src="./three.js-master/examples/js/libs/inflate.min.js"></script>
+<script src="./three.js-master/examples/js/controls/OrbitControls.js"></script>
+<!-- 引入fbx模型加载库FBXLoader -->
+<script src="./three.js-master/examples/js/loaders/OBJLoader.js"></script>
+<!-- 辅助文件 -->
+<script src="./three.js-master/examples/js/loaders/MTLLoader.js"></script>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    html,
+    body {
+        height: 100%;
+    }
+
+
+
+    .head {
+        width: 100%;
+        height: 50px;
+        background-color: #336699;
+        position: absolute;
+    }
+
+    #cavas {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /* background-color: red; */
+
+        background: url("./k6.jpeg");
+        background-size:100%;
+        cursor: pointer;
+    }
+
+    .d-nav {
+        margin: 0 auto;
+        width: 200px;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    .d-nav li {
+        float: left;
+        width: 100px;
+        height: 100%;
+        line-height: 50px;
+        text-align: center;
+        position: relative;
+        transition: all 1s;
+
+
+        /* 让子盒子在三维空间布局 */
+        transform-style: preserve-3d;
+    }
+
+    .d-nav li span {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        cursor: pointer;
+        ;
+    }
+
+    .d-nav li span:first-child {
+        background-color: #3333CC;
+        transform: translateZ(25px);
+    }
+
+    .d-nav li span:nth-child(2) {
+        background-color: orange;
+        transform: rotateX(90deg) translateZ(25px);
+    }
+
+    .d-nav li:hover {
+        transform: rotateX(-90deg);
+    }
+
+    .list {
+        display: none;
+        position: fixed;
+        width: 350px;
+        height: 300px;
+        background-color: rgba(0, 0, 68, 0.5);
+
+        right: 20px;
+        top: 20px;
+
+    }
+
+    .list ul {
+        color: #FFFFFF;
+        padding: 0 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .list ul span {
+        float: left;
+        ;
+    }
+
+    .list ul input {
+        color: #00CCFF;
+        padding-left: 10px;
+
+        float: right;
+        border: none;
+        border-bottom: 1px solid #000;
+        box-sizing: border-box;
+        height: 100%;
+        background-color: rgba(0, 0, 68, 0.3);
+    }
+
+    .list ul dt {
+        text-align: center;
+    }
+
+    .list2 {
+        display: none;
+        position: fixed;
+        width: 350px;
+        height: 500px;
+        background-color: rgba(0, 0, 68, 0.5);
+
+        right: 20px;
+        top: 20px;
+
+    }
+
+    .list2 ul {
+        color: #FFFFFF;
+        padding: 0 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .list2 ul span {
+        float: left;
+        ;
+    }
+
+    .list2 ul input {
+        color: #00CCFF;
+        padding-left: 10px;
+
+        float: right;
+        border: none;
+        border-bottom: 1px solid #000;
+        box-sizing: border-box;
+        height: 100%;
+        background-color: rgba(0, 0, 68, 0.3);
+    }
+
+    .list2 ul dt {
+        text-align: center;
+    }
+</style>
+
+<body>
+    <div class="head">
+        <ul class="d-nav">
+            <li id="dns1">
+                <span>档案室一</span>
+                <span>档案室一</span>
+            </li>
+            <li id="dns2">
+                <span>档案室二</span>
+                <span>档案室二</span>
+            </li>
+        </ul>
+    </div>
+    <div id="btn" style="width:220px;;position: fixed;left: 20px;top:100px">
+
+    </div>
+    <div id="btn2" style="width:220px;;position: fixed;left: 20px;top:100px; display: none;">
+    </div>
+    <div id="btn3" style="width:220px;;position: fixed;left: 20px;top:100px; display: none;">
+        <button style="width: 80px;height: 40px;background-color: #FF0099; font-size: 20px;">正面</button>
+        <button style="width: 80px;height: 40px;background-color: #FF0099; font-size: 20px;">反面</button>
+    </div>
+    <div class="list" id="list">
+        <ul>
+            <dt id="biaoti">1号档案柜</dt>
+            <dd><span>编号：</span> <input type="text" disabled value="23165451321"></dd>
+            <dd><span>类别：</span> <input type="text" disabled value="A类型"></dd>
+            <dd><span>档案起始时间：</span> <input type="text" disabled value="2020-04-13"></dd>
+            <dd><span>档案起始时间：</span> <input type="text" disabled value="2020-04-13"></dd>
+            <dd><span>名称：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+
+        </ul>
+    </div>
+    <div class="list2" id="list2">
+        <ul>
+            <dt id="biaoti2">1号档案柜</dt>
+            <dd><span>编号：</span> <input type="text" disabled value="23165451321"></dd>
+            <dd><span>类别：</span> <input type="text" disabled value="A类型"></dd>
+            <dd><span>档案起始时间：</span> <input type="text" disabled value="2020-04-13"></dd>
+            <dd><span>档案起始时间：</span> <input type="text" disabled value="2020-04-13"></dd>
+            <dd><span>名称：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled value="23165451321"></dd>
+            <dd><span>类别：</span> <input type="text" disabled value="A类型"></dd>
+            <dd><span>档案起始时间：</span> <input type="text" disabled value="2020-04-13"></dd>
+            <dd><span>档案起始时间：</span> <input type="text" disabled value="2020-04-13"></dd>
+            <dd><span>名称：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+            <dd><span>编号：</span> <input type="text" disabled></dd>
+        </ul>
+    </div>
+    <div id="cavas">
+    </div>
+
+</body>
+<script>
+    var camera, scene, renderer, control;
+    var remove = "1";
+    var btn = document.getElementById("btn")
+    var btn2 = document.getElementById("btn2")
+    var btn3 = document.getElementById("btn3")
+    var container = document.getElementById("cavas")
+    var biaoti = document.getElementById("biaoti")
+    var biaoti2 = document.getElementById("biaoti2")
+    var ddspan = document.querySelectorAll(".list2 ul dd span")
+    var ddinput = document.querySelectorAll(".list2 ul dd input")
+    var list = document.getElementById("list")
+    var list2 = document.getElementById("list2")
+    var dns1 = document.getElementById("dns1")
+    var dns2 = document.getElementById("dns2")
+    var OBJLoader = new THREE.OBJLoader();//obj加载器
+    var MTLLoader = new THREE.MTLLoader();//材质文件加载器
+    var loader = new THREE.FBXLoader();//创建一个FBX加载器
+    var group = new THREE.Group();
+    var group1 = new THREE.Group();
+    var group4 = new THREE.Group();
+    var flag1 = 1;
+    var infx = true
+    var str1 = ""
+    var str2 = ""
+    var mouseX = 0, mouseY = 0;
+    // 存储点过的和颜色
+    var flag = "1", color, color1;
+    var xz = 0;
+    var colors = [{}, {}, {}, {}], colors1 = [{}, {}];
+    var windowHalfX = window.innerWidth / 2;
+    var windowHalfY = window.innerHeight / 2;
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.set(0, 0, 250);
+        camera.lookAt(new THREE.Vector3(0, 0, 0))
+    }
+    // scene
+    initCamera();
+
+    // 按钮
+
+    btn.onclick = function (e) {//e指event,事件对象
+        var target = e.target || e.srcElement; //target获取触发事件的目标(li)
+        if (target.nodeName.toLowerCase() == 'button') {//目标(li)节点名转小写字母，不转的话是大写字母
+            var indexs = target.innerHTML
+
+            initCamera();
+            initControl();
+            camera.position.set(10, 10, 210);
+            render()
+            if (infx) {
+                infx = false
+                group.rotateY(Math.PI / 4);
+                group.rotateX(-Math.PI / 18);
+                group.translateY(-15)
+            }
+
+            // camera.position.set (60,0,39) ;
+            // render()
+            scene.getObjectByName(indexs).children.forEach(function (item, index) {
+                if (!item.material.length) {
+                    scene.getObjectByName(flag).children[index].material.color.set(item.material.color)
+                    item.material.color.set("#BBC9FF")
+                }
+                else if (item.material.length === 2) {
+                    scene.getObjectByName(flag).children[index].material.forEach(function (item, index) {
+                        item.color.set(colors1[index])
+                    })
+                    item.material.forEach(function (item, index) {
+                        item.color.set("#BBC9FF")
+                    })
+                }
+                else {
+
+                    scene.getObjectByName(flag).children[index].material.forEach(function (item, index) {
+                        console.log(colors)
+                        item.color.set(colors[index])
+
+                    })
+                    item.material.forEach(function (item, index) {
+                        item.color.set("#BBC9FF")
+                    })
+                }
+
+            })
+            flag = indexs;
+            biaoti.innerText = flag + "号档案柜";
+            if (flag1 === 3) {
+
+                console.log(ddspan, ddinput)
+                list.style.display = "none"
+                list2.style.display = "block"
+            } else {
+                list2.style.display = "none"
+                list.style.display = "block";
+            }
+
+            render();
+        }
+    }
+
+    btn2.onclick = function (e) {//e指event,事件对象
+        var target = e.target || e.srcElement; //target获取触发事件的目标(li)
+        if (target.nodeName.toLowerCase() == 'button') {//目标(li)节点名转小写字母，不转的话是大写字母
+            var indexs = target.innerHTML
+            //     if(infx){
+            //     infx=false
+            //     group.rotateY(Math.PI / 4);
+            //     group.rotateX(-Math.PI / 5);
+            //     group.translateY(-15)
+            // }
+
+            // camera.position.set (60,0,39) ;
+            // render()
+            scene.getObjectByName(indexs).children.forEach(function (item, index) {
+                if (!item.material.length) {
+                    scene.getObjectByName(flag).children[index].material.color.set(item.material.color)
+                    item.material.color.set("#BBC9FF")
+                }
+                else if (item.material.length === 2) {
+                    scene.getObjectByName(flag).children[index].material.forEach(function (item, index) {
+                        item.color.set(colors1[index])
+                    })
+                    item.material.forEach(function (item, index) {
+                        item.color.set("#BBC9FF")
+                    })
+                }
+                else {
+
+                    scene.getObjectByName(flag).children[index].material.forEach(function (item, index) {
+                        console.log(colors)
+                        item.color.set(colors[index])
+
+                    })
+                    item.material.forEach(function (item, index) {
+                        item.color.set("#BBC9FF")
+                    })
+                }
+
+            })
+            flag = indexs;
+            biaoti.innerText = flag + "号档案柜";
+            if (flag1 === 3) {
+
+                console.log(ddspan, ddinput)
+                list.style.display = "none"
+                list2.style.display = "block"
+            } else {
+                list2.style.display = "none"
+                list.style.display = "block";
+            }
+
+            render();
+        }
+    }
+
+    // var scaleTrack = new THREE.KeyframeTrack('scene.scale', [0, 20], [1, 1, 1, 3, 3, 3]);
+    // var duration = 20;
+    // var clip = new THREE.AnimationClip("default", duration, [scaleTrack]);
+    // var mixer = new THREE.AnimationMixer(scene);
+    //                 // 剪辑clip作为参数，通过混合器clipAction方法返回一个操作对象AnimationAction
+    // var AnimationAction = mixer.clipAction(clip);
+    //                 //通过操作Action设置播放方式
+    btn3.onclick = function (e) {//e指event,事件对象
+        var target = e.target || e.srcElement; //target获取触发事件的目标(li)
+        if (target.nodeName.toLowerCase() == 'button') {//目标(li)节点名转小写字母，不转的话是大写字母
+            var indexs = target.innerHTML
+            if (indexs == "正面") {
+                if (xz == 1) {
+                    xz = 0
+                    group4.rotateY(Math.PI);
+                    // AnimationAction.timeScale = 20;//默认1，可以调节播放速度
+                    // AnimationAction.loop = THREE.LoopOnce; //不循环播放
+                    // AnimationAction.play();//开始播放
+                    // render1();
+                }
+            }
+            if (indexs == "反面") {
+                if (xz == 0) {
+                    xz = 1
+                    group4.rotateY(Math.PI);
+                }
+            }
+        }
+    }
+
+
+    //渲染
+    scene = new THREE.Scene();
+
+    var ambientLight = new THREE.AmbientLight(0x444444);
+    scene.add(ambientLight);
+
+    // var pointLight = new THREE.DirectionalLight(0x444444);
+    // pointLight.position.set(-2000, 3000, -5000); //点光源位置
+    // scene.add(pointLight);
+
+
+    var hemiLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
+    hemiLight.position.set(0, 500, 0);
+    hemiLight.groundColor = new THREE.Color(0xffffff);//设置地面发出的光线的颜色
+    hemiLight.color = new THREE.Color(0xffffff);//设置天空发出的光线的颜色
+    hemiLight.intensity = 0.6;
+    scene.add(hemiLight);
+
+    var spotLight0 = new THREE.SpotLight(0x444444);
+    spotLight0.position.set(-20, 200, -10);
+    spotLight0.intensity = 0.2
+    // spotLight0.lookAt(plane);
+    spotLight0.castShadow = true;
+    // 设置计算阴影的区域，注意包裹对象的周围
+    spotLight0.shadow.camera.near = 1;
+    spotLight0.shadow.camera.far = 300;
+    spotLight0.shadow.camera.fov = 20;
+    scene.add(spotLight0);
+    //   ''''''   
+    loader.load("./shumu/file.fbx", function (obj) {
+        // console.log(obj)
+        obj.children.forEach(function (item) {
+            item.name = ""
+            item.children.forEach(function (item2) {
+                item2.name = ""
+                item2.castShadow = true;
+                item2.receiveShadow = true;
+            })
+            item.castShadow = true;
+            item.receiveShadow = true;
+        })
+        obj.scale.set(1.5, 1.5, 1.5)
+        obj.translateX(800)
+        obj.translateZ(700)
+        group.add(obj);
+        var obj1 = obj.clone()
+        obj1.translateX(-1600)
+        group.add(obj1)
+
+
+    })
+    //鸟
+    // loader.load("./que/file.fbx", function (obj) {
+    //     console.log(obj,22222)
+    //     obj.children.forEach(function (item) {
+    //         item.name = ""
+    //         item.children.forEach(function (item2) {
+    //             item2.name = ""
+    //             item2.castShadow = true;
+    //             item2.receiveShadow = true;
+    //         })
+    //         item.castShadow = true;
+    //         item.receiveShadow = true;
+    //     })
+    //     obj.scale.set(150, 150, 150)
+    //     obj.translateX(800)
+    //     obj.translateZ(2000)
+    //     group.add(obj);
+    //     // var obj1 = obj.clone()
+    //     // obj1.translateX(-1600)
+    //     // group.add(obj1)
+
+
+    // })
+    
+    //平面
+    var textureGrass = THREE.ImageUtils.loadTexture("./fangzi/caodi.png");
+    textureGrass.wrapS = THREE.RepeatWrapping;
+    textureGrass.wrapT = THREE.RepeatWrapping;
+    textureGrass.repeat.set(40, 40);
+
+    var planeGeometry = new THREE.PlaneGeometry(5000, 5000, 20, 20);
+    var planeMaterial = new THREE.MeshLambertMaterial({
+        map: textureGrass,
+        side: THREE.DoubleSide,
+    });
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.receiveShadow = true;
+    plane.rotateX(-Math.PI / 2)
+
+
+
+    //生成一个方向光，模拟太阳光
+    var pointColor = "#444444";
+    var dirLight = new THREE.DirectionalLight(pointColor);
+    dirLight.position.set(1000, 3000, 5000);
+    dirLight.castShadow = true;
+    dirLight.target = plane;
+    scene.add(dirLight);
+    dirLight.castShadow = true;
+    // 设置计算阴影的区域，最好刚好紧密包围在对象周围
+    // 计算阴影的区域过大：模糊  过小：看不到或显示不完整
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 300;
+    dirLight.shadow.camera.left = -50;
+    dirLight.shadow.camera.right = 50;
+    dirLight.shadow.camera.top = 200;
+    dirLight.shadow.camera.bottom = -100;
+    // 设置mapSize属性可以使阴影更清晰，不那么模糊
+    // directionalLight.shadow.mapSize.set(1024,1024)
+    console.log(dirLight.shadow.camera);
+
+    //模型加载
+    scene.add(camera);
+
+    // var clock = new THREE.Clock();
+
+
+    loader.load("./fangzi/d单独房子(2).fbx", function (obj) {
+        obj.children.forEach(function (item) {
+            item.name = ""
+            item.children.forEach(function (item2) {
+                if(item2.name=="物件_1003" || item2.name=="物件_1"){
+                    item2.name = ""
+                    item2.material.color.set("#999999")
+                }
+                item2.name = ""
+                item2.castShadow = true;
+                item2.receiveShadow = true;
+            })
+            item.castShadow = true;
+            item.receiveShadow = true;
+        })
+
+        group.add(obj);
+
+    })
+
+    // group.translateX(300)
+    group.translateY(-20)
+    // group.rotateX(Math.PI / 10);
+    group.scale.set(0.15, 0.15, 0.15)
+    group.add(plane)
+    scene.add(group)
+
+
+
+    // loader.load('./gui1/gui1.fbx', function (obj) {
+    function loader1(i, j) {
+        loader.load('./gui1/d单独柜子.fbx', function (obj) {
+            obj.rotateY(-Math.PI / 2)
+            obj.translateZ(-150 * j);
+            obj.translateX(200 * i);
+
+            obj.name = (i * 10 + j + 1) + "";
+            obj.children.forEach(function (item) {
+                item.name = (i * 10 + j + 1) + "";
+                item.children.forEach(function (item2) {
+                    // console.log(111111)
+                    item2.name = (i * 10 + j + 1) + ""
+                    // console.log(item2.name)
+                    item2.castShadow = true;
+                    item2.receiveShadow = true;
+                })
+                item.castShadow = true;
+                item.receiveShadow = true;
+
+            })
+            group7.add(obj)
+            // console.log(group7)
+
+            if (i === 3 && j === 6) {
+                // console.log(group7)
+                // obj.children[0].material.forEach(function (item, index) {
+                //     for (var key in item.color) {
+                //         colors[index][key] = item.color[key]
+                //     }
+
+                // })
+                // btn.innerHTML = str1
+                group7.translateZ(-1000)
+                group7.translateX(-200)
+                group.add(group7)
+                scene.add(group);//返回的组对象插入场景中
+
+            }
+        })
+    }
+
+
+
+    var group7 = new THREE.Group();
+    for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 7; j++) {
+            str1 += '<button style="width: 40px;height: 20px;background-color: #FF0099;">' + (i * 10 + j + 1) + '</button>'
+            loader1(i, j)
+        }
+    }
+    for (var i = 0; i < 2; i++) {
+        str1 += '<button style="width: 40px;height: 20px;background-color: #FF0099;">' + (i * 10 + j + 1) + '</button>'
+
+    }
+    // })
+
+    loader.load("./fang2/fang2.fbx", function (obj) {
+        console.log(obj);//查看加载后返回的模型对象
+        obj.children.forEach(function (item) {
+            item.name = ""
+        })
+        obj.scale.set(1.5, 1, 1.5)
+        group1.add(obj);
+
+    })
+    function loader2(i) {
+        loader.load('./gui2/gui3.fbx', function (obj) {
+            obj.translateZ(-0.9 * i);
+            obj.name = (i + 1) + "";
+            // obj.userData.type = "A"
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            obj.children.forEach(function (item, index) {
+                item.name = (i + 1) + "";
+                if (index === 1) {
+                    item.userData.type = "A"
+                }
+
+            })
+            obj.scale.set(1.5, 1.5, 1.5)
+            obj.castShadow = true;
+
+            group8.add(obj)
+
+            if (i === 5) {
+                obj.children[0].material.forEach(function (item, index) {
+                    for (var key in item.color) {
+                        colors1[index][key] = item.color[key]
+                    }
+                })
+                btn2.innerHTML = str2
+                group8.translateX(4)
+                group8.translateZ(-1)
+                group8.scale.set(1.2, 1.2, 1.2)
+                group1.add(group8)
+                group1.translateY(-30)
+                group1.rotateX(Math.PI / 4);
+                group1.rotateY(Math.PI / 3);
+                group1.scale.set(16, 16, 16)
+            }
+        })
+    }
+
+    // loader.load('./gui2/gui2.fbx', function (obj) {
+    var group8 = new THREE.Group();
+
+
+
+    for (var i = 0; i < 6; i++) {
+        str2 += '<button style="width: 40px;height: 20px;background-color: #FF0099;">' + (i + 1) + '</button>'
+        loader2(i)
+    }
+
+
+
+
+    // })
+
+    // })
+
+    // MTLLoader.load('./wenjian/file.mtl', function (materials) {
+    //     // 返回一个包含材质的对象MaterialCreator
+
+
+    //     //obj的模型会和MaterialCreator包含的材质对应起来
+    //     // OBJLoader.setMaterials(materials);
+    //     OBJLoader.load('./wenjian/file.obj', function (obj) {
+
+    //         for (var i = 0; i < 7; i++) {
+    //             for (var j = 0; j < 15; j++) {
+    //                 var obj1 = obj.clone()
+
+    //                 obj1.translateY(-20 * i);
+    //                 obj1.translateX(10 * j);
+    //                 obj1.name = (i * 10 + j + 1) + "";
+    //                 obj1.children.forEach(function (item) {
+    //                     item.material = new THREE.MeshLambertMaterial(); //材质对象Material
+    //                     item.name = (i * 10 + j + 1) + "";
+    //                 })
+
+
+    //                 group2.add(obj1)
+    //             }
+    //         }
+
+    //         group2.translateY(50);
+    //         group2.translateX(-70);
+    //         group2.translateZ(5);
+
+    //         // scene.add(group2);//返回的组对象插入场景中
+    //         group4.add(group2)
+    //     })
+
+    // })
+
+    // MTLLoader.load('./guizi2/file.mtl', function (materials) {
+    //     // 返回一个包含材质的对象MaterialCreator
+
+
+    //     //obj的模型会和MaterialCreator包含的材质对应起来
+    //     // OBJLoader.setMaterials(materials);
+    //     OBJLoader.load('./guizi2/file.obj', function (obj) {
+    //         obj.name = "";
+    //         obj.children.forEach(function (item) {
+    //             item.material = new THREE.MeshLambertMaterial(); //材质对象Material
+    //             item.name = "";
+    //         })
+    //         group3.add(obj)
+    //         console.log(obj)
+    //         group3.translateY(-90);
+
+    //         group3.scale.set(0.8, 0.8, 0.8)
+    //         group4.add(group3)
+    //         // scene.add(group3);//返回的组对象插入场景中
+    //     })
+
+    // })
+    // scene.add(group4)
+
+    function initControl() {
+        control = new THREE.OrbitControls(camera, renderer.domElement);
+        control.addEventListener('change', render);//监听鼠标、键盘事件
+    }
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearAlpha(0.2);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+    window.addEventListener('resize', onWindowResize, false);
+    function onWindowResize() {
+
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        render.shadowMapEnabled = true;
+
+    }
+    function addTouch() {
+        function onMouseClick(event) {
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            // 获取射线直线和所有模型相交的数组集合
+            var intersects = raycaster.intersectObjects(scene.children, true); //增加第二个参数，可以遍历子子孙孙对象  
+
+            if (intersects.length > 0) {
+                if (intersects[0].object.name) {
+                    scene.getObjectByName(intersects[0].object.name).children.forEach(function (item, index) {
+                        if (item.type != "Mesh") {
+                            item.children.forEach(function (item2, index2) {
+
+                                if (item2.type == "Mesh") {
+                                    scene.getObjectByName(flag).children[index].children[index2].material.color.set(item2.material.color)
+
+                                    // console.log(scene.getObjectByName(flag).children[index].children[index2],item2.material.color)
+                                    item2.material.color.set("#BBC9FF")
+                                    // console.log(item2)
+                                }
+
+
+                            })
+
+
+                        } else {
+
+                            if (!item.material.length) {
+                                scene.getObjectByName(flag).children[index].material.color.set(item.material.color)
+                                item.material.color.set("#BBC9FF")
+                            }
+                            else if (item.material.length === 2) {
+                                scene.getObjectByName(flag).children[index].material.forEach(function (item, index) {
+                                    item.color.set(colors1[index])
+                                })
+                                item.material.forEach(function (item, index) {
+                                    item.color.set("#BBC9FF")
+                                })
+                            }
+                            else {
+
+                                scene.getObjectByName(flag).children[index].material.forEach(function (item, index) {
+                                    // console.log(colors)
+                                    item.color.set(colors[index])
+
+                                })
+                                item.material.forEach(function (item, index) {
+                                    item.color.set("#BBC9FF")
+                                })
+                            }
+
+                        }
+
+
+
+                    })
+                    flag = intersects[0].object.name;
+                    console.log(flag)
+                    biaoti.innerText = flag + "号档案柜";
+                    if (flag1 === 3) {
+
+                        console.log(ddspan, ddinput)
+                        list.style.display = "none"
+                        list2.style.display = "block"
+                    } else {
+                        list2.style.display = "none"
+                        list.style.display = "block";
+                    }
+
+
+
+                    if (intersects[0].object.userData.type === "A") {
+
+                        if (intersects[0].object.name === remove) {
+
+                            scene.getObjectByName(intersects[0].object.name).translateZ(1);
+
+                            remove = parseInt(intersects[0].object.name) + 1 + ""
+                            console.log(remove)
+
+                        }
+                        else {
+                            if ((parseInt(intersects[0].object.name) - parseInt(remove)) === -1) {
+                                scene.getObjectByName(intersects[0].object.name).translateZ(-1);
+                                remove = intersects[0].object.name;
+                                console.log(remove)
+                            }
+                        }
+                    }
+                    render();
+                }
+
+            }
+        }
+
+        document.addEventListener("click", onMouseClick, false);
+    }
+    function dblclick() {
+        function onDblClick(event) {
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            // 获取射线直线和所有模型相交的数组集合
+            var intersects = raycaster.intersectObjects(scene.children, true); //增加第二个参数，可以遍历子子孙孙对象  
+
+            if (intersects.length > 0) {
+
+                if (flag1 != 3) {
+                    console.log("3333")
+                    if (intersects[0].object.name) {
+
+                        if (flag1 == 1) {
+                            initCamera();
+                            initControl();
+                            btn.style.display = "none"
+                            btn2.style.display = "none"
+                            btn3.style.display = "none"
+                            scene.getObjectByName(flag).children.forEach(function (item) {
+                                item.material.forEach(function (item, index) {
+                                    item.color.set(colors[index])
+                                })
+                            })
+                            flag = "1"
+                            list.style.display = "none";
+                            list2.style.display = "none"
+                            scene.remove(group)
+                            flag1 = 3
+                            OBJLoader.load('./danan/file.obj', function (obj) {
+                                // 加载纹理贴图
+                                var textureLoader = new THREE.TextureLoader();
+                                var texture = textureLoader.load('./danan/03_1001_BaseColor.png');
+                                // 加载高光贴图
+                                var textureSpecular = textureLoader.load('./danan/03_1001_Normal.png');
+                                // 加载凹凸贴图
+                                var textureBump = textureLoader.load('./danan/03_1001_Roughness.png');
+                                var group2 = new THREE.Group();
+                                for (var i = 0; i < 7; i++) {
+                                    for (var j = 0; j < 15; j++) {
+                                        var obj1 = obj.clone()
+
+                                        obj1.translateX(7 * j);
+                                        obj1.translateY(-35 * i);
+
+                                        obj1.name = (i * 15 + j + 1) + "";
+                                        obj1.children.forEach(function (item) {
+                                            item.material = new THREE.MeshPhongMaterial({
+                                                color: "#CD853F",
+                                                map: texture,// 普通纹理贴图
+                                                specularMap: textureSpecular, //高光贴图
+                                                bumpMap: textureBump,//凹凸贴图
+                                            }); //材质对象Material
+                                            item.name = (i * 15 + j + 1) + "";
+                                        })
+
+
+                                        group2.add(obj1)
+                                    }
+                                }
+
+                                group2.translateX(385);
+                                group2.translateY(90);
+
+
+
+                                group4.add(group2)
+                            })
+
+
+                            OBJLoader.load('./Cabinet01/file.obj', function (obj) {
+                                var group3 = new THREE.Group();
+                                obj.name = "";
+                                // 加载纹理贴图
+                                var textureLoader = new THREE.TextureLoader();
+                                var texture = textureLoader.load('./Cabinet01/01_1001_BaseColor.png');
+                                // 加载高光贴图
+                                var textureSpecular = textureLoader.load('./Cabinet01/01_1001_Normal.png');
+                                // 加载凹凸贴图
+                                var textureBump = textureLoader.load('./Cabinet01/01_1001_Roughness.png');
+                                obj.children.forEach(function (item) {
+                                    item.material = new THREE.MeshPhongMaterial({
+                                        color: "#D3D3D3",
+                                        map: texture,// 普通纹理贴图
+                                        specularMap: textureSpecular, //高光贴图
+                                        bumpMap: textureBump,//凹凸贴图
+                                    }); //材质对象Material
+                                    item.name = "";
+                                })
+                                group3.add(obj)
+                                // console.log(obj)
+                                group3.translateX(250);
+                                group3.translateY(-120);
+
+
+
+                                // group3.scale.set(1.5, 1.5, 1.5)
+                                group4.add(group3)
+                                group4.scale.set(0.6, 0.6, 0.6)
+                                group4.rotateY(-Math.PI / 18);
+                                // scene.add(group3);//返回的组对象插入场景中
+                            })
+
+                        }
+                        if (flag1 == 2) {
+                            initCamera();
+                            initControl();
+                            xz = 0
+                            console.log("2222")
+                            btn.style.display = "none"
+                            btn2.style.display = "none"
+                            btn3.style.display = "block"
+                            scene.getObjectByName(flag).children.forEach(function (item) {
+                                item.material.forEach(function (item, index) {
+                                    item.color.set(colors1[index])
+                                })
+                            })
+                            flag = "1"
+                            list.style.display = "none";
+                            list2.style.display = "none"
+                            scene.remove(group1)
+                            flag1 = 3
+                            OBJLoader.load('./danan/file.obj', function (obj) {
+                                // 加载纹理贴图
+                                var textureLoader = new THREE.TextureLoader();
+                                var texture = textureLoader.load('./danan/03_1001_BaseColor.png');
+                                // 加载高光贴图
+                                var textureSpecular = textureLoader.load('./danan/03_1001_Normal.png');
+                                // 加载凹凸贴图
+                                var textureBump = textureLoader.load('./danan/03_1001_Roughness.png');
+                                var group2 = new THREE.Group();
+                                for (var z = 0; z < 6; z++) {
+                                    for (var i = 0; i < 6; i++) {
+                                        for (var j = 0; j < 18; j++) {
+                                            var obj1 = obj.clone()
+
+                                            obj1.translateX(7 * j + 128 * z);
+                                            obj1.translateY(-35 * i);
+
+                                            obj1.name = (z * 108 + i * 18 + j + 1) + "";
+                                            obj1.children.forEach(function (item) {
+                                                item.material = new THREE.MeshPhongMaterial({
+                                                    color: "#CD853F",
+                                                    map: texture,// 普通纹理贴图
+                                                    specularMap: textureSpecular, //高光贴图
+                                                    bumpMap: textureBump,//凹凸贴图
+                                                }); //材质对象Material
+                                                item.name = (z * 108 + i * 18 + j + 1) + "";
+                                            })
+
+
+                                            group2.add(obj1)
+                                        }
+                                    }
+                                }
+
+                                group2.translateX(103);
+                                group2.translateY(53);
+
+
+                                group4.add(group2)
+
+                            })
+
+                            // 反面
+                            OBJLoader.load('./danan/file.obj', function (obj) {
+                                // 加载纹理贴图
+                                var textureLoader = new THREE.TextureLoader();
+                                var texture = textureLoader.load('./danan/03_1001_BaseColor.png');
+                                // 加载高光贴图
+                                var textureSpecular = textureLoader.load('./danan/03_1001_Normal.png');
+                                // 加载凹凸贴图
+                                var textureBump = textureLoader.load('./danan/03_1001_Roughness.png');
+                                var group5 = new THREE.Group();
+                                for (var z = 0; z < 6; z++) {
+                                    for (var i = 0; i < 6; i++) {
+                                        for (var j = 0; j < 18; j++) {
+                                            var obj1 = obj.clone()
+
+                                            obj1.translateX(7 * j + 128 * z);
+                                            obj1.translateY(-35 * i);
+
+                                            obj1.name = (z * 108 + i * 18 + j + 1) + 648 + "";
+                                            obj1.children.forEach(function (item) {
+                                                item.material = new THREE.MeshPhongMaterial({
+                                                    color: "#CD853F",
+                                                    map: texture,// 普通纹理贴图
+                                                    specularMap: textureSpecular, //高光贴图
+                                                    bumpMap: textureBump,//凹凸贴图
+                                                }); //材质对象Material
+                                                item.name = (z * 108 + i * 18 + j + 1) + 648 + "";
+                                            })
+
+
+                                            group5.add(obj1)
+                                        }
+                                    }
+                                }
+
+                                group5.translateX(-55);
+                                group5.translateY(53);
+                                group5.translateZ(-55)
+                                group5.rotateY(-Math.PI);
+
+                                group4.add(group5)
+
+                            })
+                            // 反面
+                            OBJLoader.load('./Cabinet02/file.obj', function (obj) {
+                                var group6 = new THREE.Group();
+                                obj.name = "";
+                                // 加载纹理贴图
+                                var textureLoader = new THREE.TextureLoader();
+                                var texture = textureLoader.load('./Cabinet02/02_1001_BaseColor.png');
+                                // 加载高光贴图
+                                var textureSpecular = textureLoader.load('./Cabinet02/02_1001_Normal.png');
+                                // 加载凹凸贴图
+                                var textureBump = textureLoader.load('./Cabinet02/02_1001_Roughness.png');
+                                obj.children.forEach(function (item) {
+                                    item.material = new THREE.MeshPhongMaterial({
+                                        color: "#242424",
+                                        map: texture,// 普通纹理贴图
+                                        specularMap: textureSpecular, //高光贴图
+                                        bumpMap: textureBump,//凹凸贴图
+                                    }); //材质对象Material
+                                    item.name = "";
+                                })
+
+
+                                group6.add(obj)
+                                group6.translateX(350);
+                                group6.translateY(-120);
+                                group6.translateZ(-55)
+                                group6.rotateY(-Math.PI);
+
+
+
+                                // group3.scale.set(1.5, 1.5, 1.5)
+                                group4.add(group6)
+
+                            })
+
+
+                            OBJLoader.load('./Cabinet02/file.obj', function (obj) {
+                                var group3 = new THREE.Group();
+                                var group6 = new THREE.Group();
+                                obj.name = "";
+                                // 加载纹理贴图
+                                var textureLoader = new THREE.TextureLoader();
+                                var texture = textureLoader.load('./Cabinet02/02_1001_BaseColor.png');
+                                // 加载高光贴图
+                                var textureSpecular = textureLoader.load('./Cabinet02/02_1001_Normal.png');
+                                // 加载凹凸贴图
+                                var textureBump = textureLoader.load('./Cabinet02/02_1001_Roughness.png');
+                                obj.children.forEach(function (item) {
+                                    item.material = new THREE.MeshPhongMaterial({
+                                        color: "#D3D3D3",
+                                        map: texture,// 普通纹理贴图
+                                        specularMap: textureSpecular, //高光贴图
+                                        bumpMap: textureBump,//凹凸贴图
+                                    }); //材质对象Material
+                                    item.name = "";
+                                })
+                                group3.add(obj)
+                                // console.log(obj)
+                                group3.translateX(-300);
+                                group3.translateY(-120);
+
+                                // group6.add(obj)
+                                // group6.translateX(-300);
+                                // group6.translateY(-120);
+                                // group6.translateZ(-55)
+
+
+
+                                // group3.scale.set(1.5, 1.5, 1.5)
+                                group4.add(group3)
+                                group4.scale.set(0.4, 0.4, 0.4)
+                                group4.rotateY(Math.PI / 18);
+                                // scene.add(group3);//返回的组对象插入场景中
+                            })
+                        }
+
+                        scene.add(group4)
+                        render();
+                        // console.log(group4)
+                    }
+                }
+
+            }
+            else {
+                if (flag1 == 3) {
+                    initCamera();
+                    initControl();
+                    // console.log("11111")
+                    flag1 = 1
+                    flag = "1"
+                    list.style.display = "none";
+                    list2.style.display = "none"
+
+                    btn.style.display = "block"
+                    btn2.style.display = "none"
+                    btn3.style.display = "none"
+
+                    scene.remove(group4)
+                    group4 = new THREE.Group();
+                    scene.add(group)
+                    render()
+                }
+
+            }
+
+        }
+        document.addEventListener("dblclick", onDblClick, false);
+    }
+
+    dblclick();
+    addTouch();
+    initControl();
+    animate();
+    function animate() {
+
+        requestAnimationFrame(animate);
+        render();
+
+    }
+    function render1() {
+        renderer.render(scene, camera); //执行渲染操作
+        requestAnimationFrame(render); //请求再次执行渲染函数render，渲染下一帧
+
+        //clock.getDelta()方法获得两帧的时间间隔
+        // 更新混合器相关的时间
+        mixer.update(clock.getDelta());
+    }
+    function render() {
+        renderer.render(scene, camera);
+
+    }
+    dns1.addEventListener("click", changescen1, false);
+    function changescen1() {
+        initCamera();
+        initControl();
+        if (flag1 == 3) {
+            console.log("11111")
+
+            flag = "1"
+            list.style.display = "none";
+            list2.style.display = "none"
+            btn.style.display = "none"
+            btn2.style.display = "none"
+            btn3.style.display = "none"
+            scene.remove(group4)
+            group4 = new THREE.Group();
+            scene.add(group)
+            render()
+        }
+        scene.getObjectByName(flag).children.forEach(function (item) {
+            item.material.forEach(function (item, index) {
+                item.color.set(colors1[index])
+            })
+        })
+
+        btn.style.display = "block"
+        btn2.style.display = "none"
+        btn3.style.display = "none"
+
+        flag = "1"
+        flag1 = 1
+        list.style.display = "none";
+        list2.style.display = "none"
+        scene.remove(group1)
+        scene.add(group)
+        render()
+    }
+    dns2.addEventListener("click", changescen2, false);
+    function changescen2() {
+        initCamera();
+        initControl();
+        if (flag1 == 3) {
+            console.log("22222")
+
+            flag = "1"
+            list.style.display = "none";
+            list2.style.display = "none"
+            scene.remove(group4)
+            group4 = new THREE.Group();
+            scene.add(group)
+            render()
+        }
+        btn.style.display = "none"
+        btn2.style.display = "block"
+        btn3.style.display = "none"
+        flag1 = 2;
+        // scene.getObjectByName(flag).children.forEach(function (item) {
+        //     item.material.forEach(function (item, index) {
+        //         item.color.set(colors[index])
+        //     })
+        // })
+        flag = "1"
+        list.style.display = "none";
+        list2.style.display = "none"
+        scene.remove(group)
+        scene.add(group1)
+
+        render()
+    }
+</script>
+
+</html>
